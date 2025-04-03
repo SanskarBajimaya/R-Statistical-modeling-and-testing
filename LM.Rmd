@@ -1,0 +1,617 @@
+---
+title: "Analysis of Transimission Type and MPG: An Exploratory Study"
+author: "Sam"
+date: "2025-02-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(gridExtra)
+library(ltm)
+library(ggpubr)
+library(carData)
+library(car)
+library(boot)
+```
+
+## Executive Summary
+<br>
+
+### *Objective* 
+
+<br>
+This report aims to find whether automatic or manual transmission is better for MPG efficiences. In this report, "mtcars" data set is being used in which.... 
+<br><br>
+
+### *Key Results* 
+
+<br>
+
+<br><br>
+
+### *Conclusion* 
+
+<br>
+
+<br><br>
+
+## Introduction
+<br>
+
+### *Background* 
+
+<br>
+Miles Per Gallon (MPG) is a critical metric for both car buyrs and manufacturers. <br>
+For Car buyers: <br>
+**1. Feulcost:** Higher MPG means more miles for each gallon of feul, leading to less fuel expenses. With fluctuating fuel prices, a vehicle’s fuel efficiency can significantly affect your budget. For example, a car with 30 MPG will cost about half as much to fuel as one with 15 MPG, assuming the same driving conditions. <br>
+
+**2. Environmental Impact:** Vehicles with higher MPG produce fewer emissions per mile, making them more environmentally friendly. For buyers conscious of their carbon footprint, higher MPG vehicles are often more attractive.<br>
+
+**3. Resale Value:** Fuel-efficient cars tend to hold their value better over time. As fuel costs continue to be a significant expense, cars with better MPG remain appealing in the used car market.<br>
+
+**4. Government Incentives:** In many regions, there are tax credits or rebates for purchasing fuel-efficient or low-emission vehicles, providing a financial incentive for buyers to choose cars with higher MPG.
+
+<br><br>
+
+For Manufacturers: <br>
+**1. Regulatory Compliance:** Governments worldwide are setting stricter fuel efficiency and emissions standards. Higher MPG helps manufacturers meet these regulations, avoiding fines and penalties. In the U.S., the Corporate Average Fuel Economy (CAFE) standards require automakers to achieve an average fuel efficiency across their fleets.<br>
+
+**2. Market Demand:** As buyers become more fuel-conscious, demand for fuel-efficient vehicles increases. Manufacturers who prioritize higher MPG can capture a larger share of the market. <br>
+
+**Brand Image:** Producing fuel-efficient vehicles can enhance a manufacturer's reputation as an environmentally responsible and innovative company. Brands known for their eco-friendly options often attract more customers.<br>
+
+**4. Technological Innovation:** Focusing on MPG drives innovation in automotive technology, leading to advancements in engine design, aerodynamics, and lightweight materials. This can also spill over into other areas of vehicle performance and safety.
+
+<br><br>
+
+### *Research Questions:* 
+
+<br>
+- Is an automatic or manual transmission better for MPG?
+<br>
+- How much does transmission type affect MPG?
+<br><br>
+
+### *Dataset* 
+
+<br>
+The dataset being used is "mtcars" in R containing 32 sample car data including various key variables. This is how it looks:
+```{r mtcars}
+data(mtcars)
+head(mtcars)
+```
+
+The key variables here are: <br>
+**1. MPG:** MPG is the miles per gallon ranging from 10.40 to 33.9 with a mean of 20.09. <br>
+**2. CYL:** CYL is number of cylinder ranging from 4, 6 and 8. <br>
+**3. disp:** disp is the display ranging from 71.1 to 472.0 with a mean of 230.7 <br>
+**4. hp:** hp is the hore power ranging from 52 to 335 with a mean of 146.7 <br>
+**5. drat:** .... <br>
+**6. wt:** .... <br>
+**7. qsec:** .... <br>
+**8. vs:** .... <br>
+**9. am:** .... <br>
+**10. gear:** .... <br>
+**11. carb:** .... <br>
+<br><br>
+
+### *Methodology* 
+
+<br>
+Analysis of this data set will be conducted by firstly exploring the data set by exploratory analysis where summary(), table() and ggplot() codes will be used following up with correlation Analysis, group comparisons and key observations. Then, model selection will be conducted to fit simple and multiple linear regression, and interaction models and note the observations. Residual analysis and model diagnostics will be conducted following up with statistical inference and testing.
+
+<br><br>
+
+## Exploratory Data analysis 
+
+<br>
+
+#### MPG and Transmission
+
+<br>
+```{r ggplot}
+library(ggplot2)
+ggplot(mtcars, aes(x= factor(am), y=mpg))+
+geom_boxplot() + 
+  labs(title = "MPG by transmission", x = "Transmission", y = "MPG") +
+   scale_x_discrete(labels = c("0" = "Automatic", "1" = "Manual"))
+
+```
+<br>
+
+We see in the graph comparison between MPG and Transmission, the MPG median and 50% of sample cars with automatic Transmission is less than the MPG and 50% of sample cars with manual Transmission which suggests that the manual transmission cars have higher MPG in the given data set.
+<br>
+
+#### MPG, Transmission and weight
+
+<br>
+If we consider mpg as y-axis and weight as x-axis, considering colour of points based on automatic and manual transmission.
+
+```{r ggplot2}
+library(ggplot2)
+ggplot(mtcars)+
+geom_point(aes(x=wt, y=mpg, color = factor(am), size =3)) + 
+  labs(title = "MPG by weight", x = "weight of car", y = "MPG", caption ="Blue is manual and Black is automatic") + 
+    scale_color_manual(values = c("0" = "blue", "1" = "black"), 
+                     labels = c("0" = "Automatic", "1" = "Manual"))
+  
+
+```
+<br>
+
+In this graph, we notice that manual cars have lower weight and higher mpg whereas automatic cars have larger weight and lower mpg in the mtcars dataset. There is a possibility that weight can be a Independent co variant. <br>
+
+#### MPG, Transmission and Horsepower
+
+<br>
+
+If we consider mpg as y-axis and horsepower as x-axis, considering colour of points based on automatic and manual transmission.
+
+```{r ggplot3}
+ggplot(mtcars)+
+geom_point(aes(x=hp, y=mpg, color = factor(am), size =3)) + 
+  labs(title = "MPG by Horsepower", x = "Horsepower of car", y = "MPG", caption ="Blue is Automatic and Black is Manual") +
+  scale_color_manual(values = c("0" = "blue", "1" = "black"), 
+                     labels = c("0" = "Automatic", "1" = "Manual"))
+```
+<br>
+
+In this graph, we notice that manual cars having similar horsepower posses relatively higher mpg compared to automatic cars having similar horsepower in the mtcars data set. There is a possibility that horsepower can also be a Independent co variant. <br>
+
+
+<br>
+
+#### MPG, Gears and Transmission
+
+<br>
+
+```{r gears MPG}
+ggplot(mtcars)+
+ geom_boxplot(aes(x=factor(gear), y=mpg)) +
+ labs(title = "MPG by gear", x = "Gears of car", y = "MPG")
+```
+<br>
+Here we see that cars with 3 gears have relatively lowest median MPG whereas cars with 4 gears have the highest median MPG and Cars with 5 gears have inbetween median MPG.
+
+<br>
+
+```{r gears Am}
+ggplot(mtcars, aes(x = factor(gear), y = factor(am))) +
+  geom_jitter(width = 0.2, height = 0.2) +
+  labs(title = "Gear vs Am (Jittered)", 
+       x = "Gear", 
+       y = "Automation") +
+  scale_y_discrete(labels = c("0" = "Automatic", "1" = "Manual"))
+```
+<br>
+Here we see that all cars with 3 gears are automatic and all cars with 5 gears are Manual. The gear might not be a confounding varible in this case.
+
+<br>
+
+#### MPG, Transmission and Displacement
+
+<br>
+
+If we consider mpg as y-axis and displacement as x-axis, considering colour of points based on automatic and manual transmission.
+
+```{r ggplot4}
+ggplot(mtcars)+
+           geom_point(aes(x=disp, y=mpg, color = factor(am), size =3)) + 
+           labs(title = "MPG by Displacement", x = "displacement of car", y = "MPG", caption ="Blue is manual and Black is automatic") + 
+      scale_color_manual(values = c("0" = "blue", "1" = "black"), labels = c("0" = "Automatic", "1" = "Manual"))
+```
+<br>
+
+In this graph, we notice that manual cars have higher mpg and lower displacement comparing to automatic cars having lower mpd and higher mpg in the mtcars data set. There is a possibility that Displacement can also be a Independent co variant. <br>
+
+#### MPG, Cylinder and Transmission
+
+<br>
+
+```{r cylinders MPG}
+ggplot(mtcars)+
+ geom_boxplot(aes(x=factor(cyl), y=mpg)) +
+ labs(title = "MPG by cylinder", x = "Number of Cylinder of car", y = "MPG")
+```
+<br>
+Here we see that cars with 4 cylinders have relatively highest median MPG whereas cars with 8 cylinders have the lowest median MPG and Cars with 6 cylinders have in-between median MPG.
+
+<br>
+
+```{r cylinders Am}
+ggplot(mtcars, aes(x = factor(cyl), y = factor(am))) +
+  geom_jitter(width = 0.2, height = 0.2) +
+  labs(title = "Cylinders vs Am (Jittered)", 
+       x = "Number of Cylinders", 
+       y = "Automation") +
+  scale_y_discrete(labels = c("0" = "Automatic", "1" = "Manual"))
+```
+<br>
+Here we see that most of the manual cars have 4 cylinders and most of the Automatic cars have 8 Cylinders. Supporting the previous analysis again as most of the manual cars have higher MPGs than that of Automatic cars.
+
+<br>
+
+#### MPG and Engine type
+
+<br>
+
+```{r Engine MPG}
+ggplot(mtcars)+
+ geom_boxplot(aes(x=factor(vs), y=mpg)) +
+ labs(title = "MPG by Engine type", x = "Engine type", y = "MPG")+
+scale_x_discrete(labels = c("0" = "V-shaped", "1" = "Straight"))
+```
+<br>
+Here we see that cars with Straight engine have relatively Higher median MPG whereas cars with V-shaped have the Lower median MPG in the mtcars data.
+<br><br>
+
+## Correlation analysis
+
+<br>
+
+### MPG and Weight
+
+<br>
+
+```{r cor mpg wt}
+ggscatter(mtcars, x = "wt", y = "mpg", 
+ add = "reg.line", conf.int = TRUE, 
+ cor.coef = TRUE, cor.method = "pearson",
+  xlab = "Weight (1000 lbs)", ylab = "Miles per gallon (MPG)", color = "purple")
+```
+<br>
+
+Here we see that MPG and weight of cars are highly negetively correlated as the R value is -0.87.
+
+<br><br>
+
+### MPG and horsepower
+
+<br>
+
+```{r cor mpg hp}
+ggscatter(mtcars, x = "hp", y = "mpg", 
+ add = "reg.line", conf.int = TRUE, 
+ cor.coef = TRUE, cor.method = "pearson",
+  xlab = "Horsepower", ylab = "Miles per gallon (MPG)", color = "darkgreen")
+```
+<br>
+
+Here we see that MPG and Horsepower of cars are highly negetively correlated as the R value is -0.78.
+<br><br>
+
+### MPG and displacement
+
+<br>
+
+```{r cor mpg disp}
+ggscatter(mtcars, x = "disp", y = "mpg", 
+ add = "reg.line", conf.int = TRUE, 
+ cor.coef = TRUE, cor.method = "pearson",
+  xlab = "Displacement", ylab = "Miles per gallon (MPG)", color = "lightgreen")
+```
+<br>
+
+Here we see that MPG and displacement of cars are highly negetively correlated as the R value is -0.85.
+<br><br>
+
+### Weight and horsepower
+
+<br>
+
+```{r cor weight hp}
+ggscatter(mtcars, x = "wt", y = "hp", 
+ add = "reg.line", conf.int = TRUE, 
+ cor.coef = TRUE, cor.method = "pearson",
+  xlab = "Weight (1000 lbs)", ylab = "Horsepower", color = "violet")
+```
+<br>
+
+Here we see that weight and Horsepower of cars are moderately correlated as the R value is 0.66. **This indicates that if we consider both weight and the horsepower as the predictor variables, likely we can eliminate the possibilty of multi-collinearity issue in our model**
+<br><br>
+
+### Displacement and weight
+
+<br>
+
+```{r cor disp wt}
+ggscatter(mtcars, x = "disp", y = "wt", 
+ add = "reg.line", conf.int = TRUE, 
+ cor.coef = TRUE, cor.method = "pearson",
+  xlab = "Displacement", ylab = "Weight (1000 lbs)", color = "brown")
+```
+<br>
+
+Here we see that displacement and Horsepower of cars are highly correlated as the R value is 0.89 **This indicates that if we consider both displacement and the weight as the predictor variables, likely we have the possibilty of multi-collinearity issue in our model**
+<br><br>
+
+## Group comparision
+
+<br>
+
+We'll perform the t.test or two-sample t-test on the mpg of mtcars data, comparing the two groups in the Transmission variable (Automatic v/s Manual). We'll be testing if the estimated population means of MPGs are different between the two Transmissions type.
+
+```{r t-test}
+t.test(mpg ~ am, data = mtcars)
+```
+<br>
+
+The null hyposthesis is that there is no difference between the means of the two groups. <br>
+The alternative hypothesis is that there is a difference in the means between the two groups.<br><br>
+
+The P-value in this test is 0.001374 which is smaller than 0.05 (at 5% significance level), which indicates that *the null hypothesis is likely false*. This means that we reject the null hypothesis and the data suggests that the mean MPGs of two groups (Automatic and Manual) might be different.  <br><br>
+
+The confidence interval at 95% level indicates that the differences in means of two groups (Population mean of Automatic transmission's MPG - population mean of Manual transmission's MPG)is in between: <br>
+-11.280194 to  -3.209684 <br>
+
+*Since the interval doesn't contain 0, this means that the data does support the possibility of having difference in mean MPGs of the types of transmission (which aligns with the p-value above).*
+
+<br><br>
+
+## Model Selection and Fitting
+
+<br>
+
+We have selected 5 possible independent predictor variables to put in our model for MPG as the response variable based on these reasons:<br>
+- am (Transmission): The high probability that the population mean MPGs of two groups are different.<br>
+- wt (Weight): The weight is highly correlated with our response variable(mpg).<br>
+- hp (Horsepower): The horsepower is highly correlated with our response variable(mpg).<br>
+- vs (Engine type): Different engine type have different MPGs considering most proportion of the samples.<br>
+- cyl (Cylinders) : Number of cylinder affects the MPGs of the car samples and have some pattern with transmission type.<br><br>
+
+**We won't consider displacement to avoid any multi-collinarity issues in our model.**
+
+<br>
+
+5 models will be constructed each time feeding one potential predictor variable. Each model will then be tested using Variance Inflation Factor, AIC, BIC, ANOVA and adjusted R-squared to find the best suitable model. <br>
+
+```{r models}
+fit1 <- lm(mpg~am, data = mtcars)
+fit2 <- lm(mpg~am + hp, data = mtcars)
+fit3 <- lm(mpg~am + hp + wt, data = mtcars)
+fit4 <- lm(mpg~am + hp + wt + vs, data = mtcars)
+fit5 <- lm(mpg~am + hp + wt + vs + cyl, data = mtcars)
+```
+<br>
+
+### Variance Influence Factor(VIF) / Multi-collinarity Test
+
+<br>
+
+```{r vif}
+vif(fit5)
+```
+<br>
+
+We see that the VIF of cyl in very large (9.67). We might consider not feeding our model with cylinder variable. We might consider eliminating the fit5 model.
+<br>
+
+```{r vif2}
+vif(fit4)
+vif(fit3)
+vif(fit2)
+```
+<br>
+
+We see that the VIF of all other models are less than 5, indicating that other models has acceptable multi-collinearity.
+<br>
+
+### ANOVA test
+
+<br>
+
+```{r anova}
+anova(fit1,fit2,fit3,fit4,fit5)
+```
+<br>
+
+We see that the F-statistics of fit4 in very small (1.81) and the P value is greater than 0.05, similar conditions for the fit5. We might consider not feeding our model with vs (engine) and cyl (cylinder) variable. We might consider eliminating the fit4 and fit5 model.
+<br>
+
+### Adjusted R-squared comparision
+
+<br>
+
+```{r rsquare}
+summary(fit1)$adj.r.squared
+summary(fit2)$adj.r.squared
+summary(fit3)$adj.r.squared
+summary(fit4)$adj.r.squared
+summary(fit5)$adj.r.squared
+```
+<br>
+
+We see that the Adjusted r square is higher, around 0.82 for fit3, fit4 and fit5. 
+<br>
+
+### AIC and BIC Test
+
+<br>
+
+```{r AIC}
+AIC(fit1,fit2,fit3,fit4,fit5)
+plot(AIC(fit1,fit2,fit3,fit4,fit5))
+```
+<br>
+
+We see the AIC values is significantly dropped from fit3 to fit5. Suggesting that best model is either fit3, fit4 or fit5.
+<br>
+
+```{r BIC}
+BIC(fit1,fit2,fit3,fit4,fit5)
+plot(BIC(fit1,fit2,fit3,fit4,fit5))
+```
+<br>
+
+We see the BIC values is significantly lowest on fit3 then starts to rise again from fit4 to fit5. Suggesting that best model is either fit3.
+<br>
+
+
+**Taking every test account, we can say that the fit3 might be our best preference as it has passed anova test with good F-stats and P values, multi-collinarity test with appropriate variance influence factor, has higher adjusted R squared value and have lowest AIC and BIC values.**
+<br><br>
+
+### Bonus (checking other variales concluding overfitting):
+
+<br> 
+
+If we fit all other varaiables in the data set one by one in each method, it results to overfitting, suggesting that fit3 is the best fit for the model.
+<br>
+```{r bonus}
+fit6 <- lm(mpg~am + hp + wt + gear, data = mtcars)
+fit7 <- lm(mpg~am + hp + wt + gear + carb, data = mtcars)
+fit8 <- lm(mpg~am + hp + wt +gear + carb+ qsec, data = mtcars)
+fit9 <- lm(mpg~am + hp + wt +gear + carb+ qsec + drat, data = mtcars)
+
+AIC(fit1,fit2,fit3,fit6,fit7,fit8,fit9)
+plot(AIC(fit1,fit2,fit3,fit6,fit7,fit8,fit9))
+
+BIC(fit1,fit2,fit3,fit6,fit7,fit8,fit9)
+plot(BIC(fit1,fit2,fit3,fit6,fit7,fit8,fit9))
+```
+<br>
+**We see in all fit models, fit3 has the lowest AIC and BIC model, suggesting that fit3 is the best model without any over fitting.**
+
+<br><br>
+
+## Interpretation of coefficients
+
+<br>
+
+
+```{r fit3}
+summary(fit3)
+```
+<br>
+
+- Adjusted R squared (0.8227): Around 82.27% of mpg variation can be explained by this model (fit3).<br>
+- Residual Standard error (2.5): the observed mpg are 2.5 unit far from predicted model.<br>
+- Mean MPG (34): If all predictor variables are 0, mean mpg is 34mpg.<br>
+- Slope of transmission (2.08): The effect of changing from automatic to manual transmission on "mpg", an increase of 2.083710 mpg.<br>
+- P value of transmission: As the P value is greater than 0.05, **indicating it's not statistically significant at the 5% level.**<br>
+- Slope of horsepower: A decrease of 0.037479 mpg per unit increase in horsepower, adjusting for transmission.<br>
+- P value of horsepower: As the P value is smaller than 0.05, indicating it's highly statistically significant.<br>
+- Slope of weight(1000 lbs): A decrease of 2.878575 mpg per 1000 lbs increase in weight adjusting for transmission.<br>
+- P value of weight: As the P value is smaller than 0.05, indicating it's statistically significant.<br>
+<br>
+
+```{r confint fit3}
+confint(fit3)
+```
+<br>
+We see that at 95% confidence level, the effect of changing from automatic to manual transmission on "mpg", an increase of -0.258 to 4.121 mpg. However as there is 0 falling in the range, we can suggest that our model accuracy is not so strong at 95% confidence level as the change in transmission can have zero change in mpg.
+<br>
+
+```{r confint fit3 85}
+confint(fit3,level = 0.85)
+```
+<br>
+We see that at 85% confidence level, the effect of changing from automatic to manual transmission on "mpg", an increase of 0.046 to 4.121 mpg. This shows that our model is not accurate enough at predicting the relationship of change in transmission and change in mpg at higher signficance level.  
+
+
+**The P value is not statistically significant, or acquire very strong confidence level. We can enhance inference accuracy with resampling.**
+<br><br>
+
+## Boot Strap Analysis
+
+<br>
+
+we will define a boot function "boot_fn" which fits the model on resampled data and returns the coefficients. We'll perform bootstrap analysis with 1000 resamples with replacement and store the result in "bppt_results". We'll then observe the output.<br>
+
+```{r bootstrap}
+boot_fn <- function(data,indices){d <- data[indices, ] 
+ fitSample<-lm(mpg~am+wt+hp, data = d) 
+ return(coef(fitSample))}
+set.seed(123)
+boot_results<- boot(data=mtcars, statistic = boot_fn, R=1000)
+boot_results
+```
+<br>
+**Bias:** <br>
+
+For the Intercept (t1*): 0.425564443 / 34.00287512 ≈ 0.0125 (~1.25%) – Acceptable. <br>
+
+**For am (t2*): -0.140591967 / 2.08371013 ≈ -0.0675 (~6.75%) – Slightly higher. **<br>
+
+For wt (t3*): -0.108576842 / -2.87857541 ≈ 0.0377 (~3.77%) – Acceptable.<br>
+
+For hp (t4*): -0.000494366 / -0.03747873 ≈ 0.0132 (~1.32%) – Acceptable.<br>
+
+**Standard Error:** <br>
+
+Relative standard error for each parameter should be considered in the context of the original estimates. Smaller standard errors indicate more precise estimates.<br>
+
+**In general, these biases and standard errors appear reasonable (at 5% significant level), indicating that our original analysis of the model for its coefficients might be true but we still don't have enough data samples to conclude the accurate results.** <br>
+
+```{r bootstrap plot}
+plot(boot_results)
+```
+<br>
+
+In the plot of the boot strap analysis result, we see that almost all of the re-sampled data forms a Gaussian curve indicating normality in the Density of of the data. We can see one outlier in the quntiles of Standard Normal, However if we analyze, the possibility of 1 in 1000 point being an outlier can be considered an error. 
+
+## Residual Analysis
+
+<br>
+
+### Residual vs Fitted
+
+<br>
+
+```{r resid1}
+plot(fit3,which = 1)
+```
+<br>
+In the plot Residual vs Fitted, we check for non-linearity error variance **(heteroscedasity)** We see a random scatter of points meaning that the model captured the relationship well.
+<br>
+
+### Normal Q-Q (Quantile-Quantile) Plot
+
+<br>
+
+```{r resid2}
+plot(fit3,which = 2)
+```
+<br>
+In the plot Normal Q-Q plot, we check if the residual is normally distributed. We see that the points follows the reference line roughly, indicating that the residuals are normally distributed.
+<br>
+
+We can also check for **Shapiro-Wilk normality test** for the normality test. <br>
+
+```{r resid2 Shapiro}
+shapiro.test(fit3$residuals)
+```
+<br>
+As the W value is close to 1, indicating that the residuals are likely normally distributed. <br>
+Also the P value is 0.1059 which is greater than 0.05, indicating that there is no strong evidence against normality, so the residuals are most likely normally distributed.<br>
+
+### Scale-Location
+
+<br>
+
+```{r resid3}
+plot(fit3,which = 3)
+```
+<br>
+In the plot Scale-Location, we check for **Homoscedasticity**. As the points are randomly scattered around a horizontal line, indicating no Homoscedasticity. 
+<br>
+
+### Residual vs Leverage
+
+<br>
+
+```{r resid4}
+plot(fit3,which = 5)
+```
+<br>
+In the plot Residual vs Leverage, we identify any points with high influence on the regression model. As the points are inside the dotted lines (Cook's distance), indicating **no points that disproportionate influence on the model.** 
+<br>
+
+
+
+## Conclusion
+
+<br>
+
+
