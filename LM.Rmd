@@ -22,20 +22,16 @@ library(boot)
 ### *Objective* 
 
 <br>
-This report aims to find whether automatic or manual transmission is better for MPG efficiences. In this report, "mtcars" data set is being used in which.... 
-<br><br>
+This report aims to find: <br>
 
-### *Key Results* 
-
-<br>
-
-<br><br>
-
-### *Conclusion* 
+**Whether automatic or manual transmission is better for fuel efficiency (MPG).**
 
 <br>
 
-<br><br>
+**How much transmission type affects MPG, considering other factors like weight, horsepower, and engine size.**
+<br>
+
+
 
 ## Introduction
 <br>
@@ -610,8 +606,107 @@ In the plot Residual vs Leverage, we identify any points with high influence on 
 
 
 
+## *Key Results* 
+
+<br>
+
+### 1. Transmission and MPG
+
+<br>
+
+Manual transmission cars generally have higher MPG (fuel efficiency) than automatic transmission cars in the dataset.<br>
+
+The average MPG for manual cars was 24.39, while automatic cars averaged 17.15.<br>
+
+A **t-test** confirmed that this difference is statistically significant (p-value = 0.0014).<br>
+
+### 2. Other factors affecting MPG
+
+<br>
+
+**Weight (wt):** Strong negative correlation with MPG (R = -0.87). Heavier cars tend to have lower fuel efficiency. <br>
+
+**Horsepower (hp):** Also negatively correlated with MPG (R = -0.78). More powerful engines reduce fuel efficiency. <br>
+
+**Displacement (disp):** Highly negatively correlated with MPG (R = -0.85). Larger engines consume more fuel. <br>
+
+**Cylinders (cyl):** More cylinders (e.g., 8-cylinder engines) result in lower MPG compared to 4-cylinder engines. <br>
+
+### 3. Best Predictive Model
+
+<br>
+
+The most reliable model for predicting MPG includes: <br>
+
+Transmission type (am) <br>
+
+Horsepower (hp) <br>
+
+Weight (wt) <br><br>
+
+This model explains **82.3%** of MPG variation (Adjusted R² = 0.8227). <br><br>
+
+**Horsepower and weight** were statistically significant predictors, but **transmission type alone was not** when other factors were considered (p-value = 0.141). <br>
+
+### 4. Bootstrap Validation
+
+<br>
+
+A resampling test confirmed that the model coefficients are reasonably stable, though more data could improve accuracy. <br>
+
+### 5. Residual Analysis
+
+<br>
+
+No major issues with the model’s assumptions (normality, homoscedasticity, outliers). <br>
+
+
+<br><br>
+
+
 ## Conclusion
 
 <br>
+
+
+### 1. Manual V/S Automatic
+
+<br>
+
+**Manual cars tend to have better MPG**, but this difference may be influenced by other factors like weight and engine power. <br>
+
+When accounting for horsepower and weight, the transmission type’s direct impact on MPG becomes less statistically significant. <br>
+
+### 2. Key influencers on MPG
+
+<br>
+
+**Weight and horsepower**, are stronger predictors of fuel efficiency than transmission type alone. <br>
+
+Lighter cars with less powerful engines generally achieve higher MPG. <br>
+
+### 3. Practical implecations
+
+<br>
+
+If fuel efficiency is a priority, buyers should consider lighter cars with smaller, less powerful engines, regardless of transmission type. <br>
+
+Manual transmissions may still offer a slight MPG advantage, but the effect is smaller when other factors are controlled. <br>
+
+
+### 4. Limitations
+
+<br>
+
+The dataset is small (only 32 cars), so results may not generalize to all vehicles. <br>
+
+Real-world driving conditions (e.g., traffic, driving habits) were not considered. <br>
+
+## Final Takeaway
+
+<br>
+
+While manual cars in the dataset showed higher MPG, the biggest fuel savings come from choosing a lighter car with a fuel-efficient engine. Transmission type has a smaller effect when weight and horsepower are factored in.
+
 
 
